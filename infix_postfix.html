@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Infix → Postfix — Stack Algorithm</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --surface2: #1a1a26;
+    --surface3: #22223a;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.15);
+    --text: #f0f0ff;
+    --muted: #8888aa;
+    --accent: #7c6bff;
+    --accent2: #ff6b8a;
+    --teal: #3dffd4;
+    --amber: #ffd166;
+    --green: #06ffa5;
+    --mono: 'Space Mono', monospace;
+    --sans: 'Syne', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(124,107,255,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(124,107,255,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 2rem 6rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* HERO */
+  .hero {
+    padding: 5rem 0 3rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 4rem;
+  }
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(124,107,255,0.12);
+    border: 1px solid rgba(124,107,255,0.3);
+    border-radius: 100px;
+    padding: 6px 14px;
+    font-size: 11px;
+    font-family: var(--mono);
+    color: var(--accent);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+  }
+  .hero-badge::before {
+    content: '';
+    width: 6px; height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.7); }
+  }
+  .hero h1 {
+    font-size: clamp(2.5rem, 7vw, 5rem);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    margin-bottom: 1.5rem;
+  }
+  .hero h1 span.accent { color: var(--accent); }
+  .hero h1 span.arrow {
+    color: var(--muted);
+    font-weight: 400;
+  }
+  .hero p {
+    font-size: 1.1rem;
+    color: var(--muted);
+    max-width: 520px;
+    line-height: 1.7;
+  }
+
+  /* NAV PILLS */
+  .nav-pills {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin: 2rem 0 4rem;
+  }
+  .nav-pill {
+    padding: 8px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    font-size: 12px;
+    font-family: var(--mono);
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+  }
+  .nav-pill:hover {
+    background: var(--surface2);
+    color: var(--text);
+    border-color: var(--border2);
+  }
+
+  /* SECTION */
+  .section {
+    margin-bottom: 5rem;
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+  }
+  .section.visible { opacity: 1; transform: translateY(0); }
+
+  .section-number {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+    margin-bottom: 0.5rem;
+    display: block;
+  }
+  .section h2 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 1.25rem;
+    line-height: 1.2;
+    color: var(--text);
+    white-space: normal;
+    word-break: break-word;
+  }
+  .section p {
+    font-size: 0.95rem;
+    line-height: 1.75;
+    color: var(--muted);
+    max-width: 680px;
+    margin-bottom: 1rem;
+  }
+  .section p:last-child { margin-bottom: 0; }
+
+  /* CARDS */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  .card:last-child { margin-bottom: 0; }
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1rem;
+  }
+  .card-accent-purple { border-color: rgba(124,107,255,0.3); }
+  .card-accent-teal { border-color: rgba(61,255,212,0.3); }
+  .card-accent-amber { border-color: rgba(255,209,102,0.3); }
+  .card-accent-coral { border-color: rgba(255,107,138,0.3); }
+
+  .card-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 0.6rem;
+  }
+  .label-purple { color: var(--accent); }
+  .label-teal { color: var(--teal); }
+  .label-amber { color: var(--amber); }
+  .label-coral { color: var(--accent2); }
+  .label-green { color: var(--green); }
+
+  .card h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    line-height: 1.3;
+    white-space: normal;
+    word-break: break-word;
+    color: var(--text);
+  }
+  .card p { max-width: none; }
+
+  code {
+    font-family: var(--mono);
+    font-size: 0.85em;
+    background: rgba(124,107,255,0.12);
+    color: #b8b0ff;
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+
+  pre {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    overflow-x: auto;
+    color: var(--text);
+    line-height: 1.7;
+    white-space: pre;
+    margin-top: 1rem;
+  }
+
+  /* COMPARISON SPLIT */
+  .compare-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+  @media (max-width: 580px) { .compare-split { grid-template-columns: 1fr; } }
+
+  .compare-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem;
+  }
+  .compare-box.highlight { border-color: rgba(61,255,212,0.35); background: rgba(61,255,212,0.04); }
+
+  .big-code {
+    font-family: var(--mono);
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    margin: 0.5rem 0;
+    color: var(--text);
+  }
+
+  /* PRECEDENCE BARS */
+  .prec-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+  .prec-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.25rem 1rem;
+    text-align: center;
+  }
+  .prec-sym {
+    font-family: var(--mono);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .prec-name { font-size: 0.7rem; color: var(--muted); margin: 4px 0; letter-spacing: 0.05em; }
+  .prec-weight { font-size: 0.75rem; font-weight: 600; margin-bottom: 8px; }
+  .bar-wrap { height: 4px; background: rgba(255,255,255,0.08); border-radius: 2px; overflow: hidden; }
+  .bar { height: 100%; border-radius: 2px; transition: width 0.8s ease; }
+
+  /* RULES */
+  .rule-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.25rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .rule-row:last-child { border-bottom: none; }
+  .rule-num {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-weight: 700;
+  }
+  .rn-purple { background: rgba(124,107,255,0.2); color: var(--accent); }
+  .rn-teal { background: rgba(61,255,212,0.15); color: var(--teal); }
+  .rn-amber { background: rgba(255,209,102,0.15); color: var(--amber); }
+  .rn-coral { background: rgba(255,107,138,0.15); color: var(--accent2); }
+  .rn-green { background: rgba(6,255,165,0.15); color: var(--green); }
+
+  .rule-title { font-size: 0.9rem; font-weight: 600; margin-bottom: 4px; color: var(--text); }
+  .rule-body { font-size: 0.85rem; line-height: 1.6; color: var(--muted); }
+
+  /* ===== INTERACTIVE TRACE ===== */
+  .trace-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    overflow: hidden;
+  }
+  .trace-header {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .trace-header label { font-size: 0.8rem; color: var(--muted); font-family: var(--mono); flex-shrink: 0; }
+  .trace-input {
+    font-family: var(--mono);
+    font-size: 1rem;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    color: var(--text);
+    padding: 8px 12px;
+    outline: none;
+    flex: 1;
+    min-width: 120px;
+    transition: border-color 0.2s;
+  }
+  .trace-input:focus { border-color: var(--accent); }
+
+  .trace-body { padding: 1.5rem; }
+
+  /* Token strip */
+  .token-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 1.5rem;
+  }
+  .tok {
+    width: 40px; height: 40px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 8px;
+    font-family: var(--mono);
+    font-size: 1rem;
+    font-weight: 700;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--muted);
+    transition: all 0.25s;
+    position: relative;
+  }
+  .tok.active {
+    background: rgba(255,209,102,0.15);
+    border-color: var(--amber);
+    color: var(--amber);
+    transform: scale(1.2) translateY(-4px);
+    box-shadow: 0 8px 24px rgba(255,209,102,0.15);
+  }
+  .tok.done {
+    background: var(--surface);
+    color: rgba(255,255,255,0.2);
+    border-color: rgba(255,255,255,0.05);
+  }
+  .tok.is-operand { background: rgba(61,255,212,0.08); border-color: rgba(61,255,212,0.2); color: var(--teal); }
+  .tok.is-operator { background: rgba(255,107,138,0.08); border-color: rgba(255,107,138,0.2); color: var(--accent2); }
+  .tok.is-paren { background: rgba(124,107,255,0.1); border-color: rgba(124,107,255,0.25); color: var(--accent); }
+  .tok.active { background: rgba(255,209,102,0.15) !important; border-color: var(--amber) !important; color: var(--amber) !important; }
+
+  /* Columns */
+  .trace-cols {
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    gap: 1.5rem;
+    align-items: start;
+    margin-bottom: 1.5rem;
+  }
+  @media (max-width: 500px) { .trace-cols { grid-template-columns: 1fr; } }
+
+  .col-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .stack-col { }
+  .stack-visual {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 4px;
+    min-height: 130px;
+    align-items: flex-start;
+  }
+  .stack-cell {
+    width: 48px; height: 38px;
+    background: rgba(124,107,255,0.15);
+    border: 1px solid rgba(124,107,255,0.35);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono);
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--accent);
+    animation: stackIn 0.2s ease;
+  }
+  @keyframes stackIn { from { opacity:0; transform: translateY(8px); } to { opacity:1; transform: translateY(0); } }
+  .stack-empty-label { font-size: 0.7rem; font-family: var(--mono); color: rgba(255,255,255,0.15); padding-top: 48px; }
+
+  .output-col { }
+  .output-display {
+    font-family: var(--mono);
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: var(--text);
+    min-height: 52px;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .out-char {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    animation: charIn 0.25s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  @keyframes charIn { from { opacity:0; transform: translateY(-12px) scale(0.7); } to { opacity:1; transform: translateY(0) scale(1); } }
+  .out-placeholder { color: rgba(255,255,255,0.12); font-size: 1.2rem; }
+
+  .step-desc-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    font-size: 0.82rem;
+    line-height: 1.6;
+    color: var(--muted);
+    min-height: 52px;
+    margin-bottom: 1.25rem;
+    font-family: var(--mono);
+  }
+  .step-desc-box span { color: var(--amber); }
+
+  .btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn {
+    padding: 10px 20px;
+    border-radius: 100px;
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.18s;
+    border: 1px solid var(--border2);
+    background: var(--surface2);
+    color: var(--text);
+  }
+  .btn:hover { background: var(--surface3); border-color: rgba(255,255,255,0.25); }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+  .btn-primary:hover { background: #9a8dff; border-color: #9a8dff; }
+  .btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+  /* Bug highlight */
+  .bug-line { color: var(--accent2); }
+  .ok-line { color: var(--teal); }
+  .comment-line { color: var(--muted); }
+
+  /* Function accordion */
+  .fn-item {
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 0.75rem;
+    transition: border-color 0.2s;
+  }
+  .fn-item:hover { border-color: var(--border2); }
+  .fn-header {
+    padding: 1rem 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    background: var(--surface);
+    user-select: none;
+  }
+  .fn-header:hover { background: var(--surface2); }
+  .fn-name { font-family: var(--mono); font-size: 0.85rem; color: var(--accent); font-weight: 700; }
+  .fn-tag { font-size: 0.7rem; color: var(--muted); }
+  .fn-chevron { color: var(--muted); font-size: 0.8rem; transition: transform 0.25s; }
+  .fn-body {
+    display: none;
+    padding: 1.25rem;
+    background: var(--surface2);
+    border-top: 1px solid var(--border);
+    font-size: 0.85rem;
+    line-height: 1.7;
+    color: var(--muted);
+  }
+  .fn-body.open { display: block; }
+  .fn-item.open .fn-chevron { transform: rotate(180deg); }
+
+  /* Worked example table */
+  .trace-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    margin-top: 1rem;
+  }
+  .trace-table th {
+    padding: 8px 12px;
+    text-align: left;
+    color: var(--muted);
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--border);
+  }
+  .trace-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    color: var(--text);
+    white-space: pre;
+  }
+  .trace-table tr:last-child td { border-bottom: none; }
+  .trace-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .td-tok { color: var(--amber); font-weight: 700; }
+  .td-stack { color: var(--accent); }
+  .td-out { color: var(--teal); }
+  .td-action { color: var(--muted); font-size: 0.72rem; }
+
+  /* Limitation chips */
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 0.75rem; }
+  .chip {
+    padding: 6px 14px;
+    border-radius: 100px;
+    font-size: 0.75rem;
+    font-family: var(--mono);
+  }
+  .chip-red { background: rgba(255,107,138,0.1); border: 1px solid rgba(255,107,138,0.25); color: var(--accent2); }
+  .chip-amber { background: rgba(255,209,102,0.1); border: 1px solid rgba(255,209,102,0.2); color: var(--amber); }
+  .chip-teal { background: rgba(61,255,212,0.08); border: 1px solid rgba(61,255,212,0.2); color: var(--teal); }
+
+  /* divider */
+  hr { border: none; border-top: 1px solid var(--border); margin: 4rem 0; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-badge">Data Structures · Stack Algorithm</div>
+    <h1>
+      <span class="accent">Infix</span><br>
+      <span class="arrow">→ </span>Postfix
+    </h1>
+    <p>A complete interactive walkthrough of the Shunting-yard algorithm — every concept, every function, every edge case explained from scratch.</p>
+  </div>
+
+  <nav class="nav-pills">
+    <a class="nav-pill" href="#part1">01 — The problem</a>
+    <a class="nav-pill" href="#part2">02 — Why a stack</a>
+    <a class="nav-pill" href="#part3">03 — Precedence</a>
+    <a class="nav-pill" href="#part4">04 — The rules</a>
+    <a class="nav-pill" href="#part5">05 — Live trace</a>
+    <a class="nav-pill" href="#part6">06 — Code explained</a>
+    <a class="nav-pill" href="#part7">07 — Manual example</a>
+    <a class="nav-pill" href="#part8">08 — Bugs &amp; limits</a>
+  </nav>
+
+  <!-- PART 1 -->
+  <div class="section" id="part1">
+    <span class="section-number">// 01</span>
+    <h2>What problem are we solving?</h2>
+    <p>When you write math, you use <strong style="color:var(--text)">infix notation</strong> — the operator sits <em>between</em> the two values it operates on. You've been reading this since grade school and your brain handles it naturally.</p>
+    <p>Computers, however, need to know the order of operations explicitly. They cannot intuitively "see" that multiplication happens before addition. They need a format with no ambiguity at all — and that format is called <strong style="color:var(--text)">postfix notation</strong> (or Reverse Polish Notation).</p>
+
+    <div class="compare-split" style="margin-top:1.5rem;">
+      <div class="compare-box">
+        <div class="card-label label-amber">Infix — human-readable</div>
+        <div class="big-code">3 + 4 * 2</div>
+        <p style="font-size:0.8rem;margin-top:8px;">Requires knowledge of precedence rules. You must know that <code>*</code> runs before <code>+</code>, otherwise you'd get the wrong answer.</p>
+      </div>
+      <div class="compare-box highlight">
+        <div class="card-label label-teal">Postfix — machine-friendly</div>
+        <div class="big-code">3 4 2 * +</div>
+        <p style="font-size:0.8rem;margin-top:8px;">No ambiguity. Scan strictly left-to-right: push 3, push 4, push 2, multiply top two (4×2=8), add top two (3+8=11). Done.</p>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:1rem;">
+      <div class="card-label label-purple">Why does this matter in real life?</div>
+      <p>Compilers, calculators, spreadsheet engines, and expression evaluators all convert infix to postfix (or a similar tree structure) internally before computing. Understanding this algorithm is understanding how machines parse and evaluate expressions.</p>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- PART 2 -->
+  <div class="section" id="part2">
+    <span class="section-number">// 02</span>
+    <h2>Why a stack?</h2>
+    <p>A stack is a <strong style="color:var(--text)">last-in, first-out</strong> (LIFO) container. The last thing you push onto it is the first thing you get back. Think of a stack of plates — you always take from the top.</p>
+    <p>The algorithm needs to hold operators temporarily while it decides when to release them. The rule is: an incoming operator should trigger the release of any previously stored operators that have <em>higher or equal</em> precedence. A stack enforces this perfectly — you can only ever look at and remove the most recent thing you stored, which is always the one with the highest pending precedence.</p>
+
+    <div class="card-grid">
+      <div class="card card-accent-coral">
+        <div class="card-label label-coral">Why not a queue?</div>
+        <h3>Queue is first-in, first-out</h3>
+        <p>A queue would release operators in the order they arrived, ignoring precedence entirely. That gives you wrong output.</p>
+      </div>
+      <div class="card card-accent-purple">
+        <div class="card-label label-purple">Why not an array index?</div>
+        <h3>Random access isn't needed</h3>
+        <p>You never need to reach into the middle. You only ever look at and remove the top element. A stack with O(1) push/pop is the perfect fit.</p>
+      </div>
+      <div class="card card-accent-teal">
+        <div class="card-label label-teal">Why not recursion?</div>
+        <h3>Stack does the same thing</h3>
+        <p>Recursive solutions build an implicit call stack anyway. An explicit stack gives you control and avoids stack overflow on long expressions.</p>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- PART 3 -->
+  <div class="section" id="part3">
+    <span class="section-number">// 03</span>
+    <h2>Precedence and associativity</h2>
+    <p>Before looking at any code, you need to understand the two properties that govern every decision the algorithm makes.</p>
+
+    <div class="prec-grid">
+      <div class="prec-card">
+        <div class="prec-sym">+&nbsp;−</div>
+        <div class="prec-name">addition / subtraction</div>
+        <div class="prec-weight" style="color:#378ADD;">weight: 1 (lowest)</div>
+        <div class="bar-wrap"><div class="bar" style="width:33%;background:#378ADD;"></div></div>
+      </div>
+      <div class="prec-card">
+        <div class="prec-sym">*&nbsp;/</div>
+        <div class="prec-name">multiply / divide</div>
+        <div class="prec-weight" style="color:var(--teal);">weight: 2 (medium)</div>
+        <div class="bar-wrap"><div class="bar" style="width:66%;background:var(--teal);"></div></div>
+      </div>
+      <div class="prec-card">
+        <div class="prec-sym">$</div>
+        <div class="prec-name">exponentiation</div>
+        <div class="prec-weight" style="color:var(--accent2);">weight: 3 (highest)</div>
+        <div class="bar-wrap"><div class="bar" style="width:100%;background:var(--accent2);"></div></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:1.25rem;">
+      <div class="card-label label-amber">Associativity — which direction do equal operators bind?</div>
+      <div class="rule-row" style="padding-top:0.75rem;">
+        <div class="rule-num rn-teal">L</div>
+        <div>
+          <div class="rule-title">Left-associative (most operators)</div>
+          <div class="rule-body"><code>a - b - c</code> means <code>(a - b) - c</code>. Equal-precedence operators pop each other from left to right. When a new operator arrives with equal precedence, the one on the stack pops first.</div>
+        </div>
+      </div>
+      <div class="rule-row">
+        <div class="rule-num rn-coral">R</div>
+        <div>
+          <div class="rule-title">Right-associative (exponentiation only)</div>
+          <div class="rule-body"><code>a $ b $ c</code> means <code>a $ (b $ c)</code>. When a new <code>$</code> arrives and the stack top is also <code>$</code>, do <em>not</em> pop — let the new one go on top. This reverses the usual rule for equal precedence.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card card-accent-coral" style="margin-top:1rem;">
+      <div class="card-label label-coral">Bug alert — the switch fall-through problem</div>
+      <p>The <code>GetOperatorWeight</code> function in this code has a classic C++ bug. There are no <code>break</code> statements between cases, so execution falls through:</p>
+      <pre><span class="comment-line">// What the programmer intended:</span>
+case '+': case '-': weight = 1;  <span class="bug-line">// ← missing break!</span>
+case '*': case '/': weight = 2;  <span class="bug-line">// ← missing break!</span>
+case '$':           weight = 3;
+
+<span class="comment-line">// What actually happens when you call GetOperatorWeight('+'):</span>
+<span class="comment-line">// enters case '+', sets weight = 1</span>
+<span class="comment-line">// falls through to next case, sets weight = 2</span>
+<span class="comment-line">// falls through to '$' case, sets weight = 3</span>
+<span class="comment-line">// returns 3 — WRONG!</span>
+
+<span class="ok-line">// Fix: add break after each group</span>
+case '+': case '-': weight = 1; break;
+case '*': case '/': weight = 2; break;
+case '$':           weight = 3; break;</pre>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- PART 4 -->
+  <div class="section" id="part4">
+    <span class="section-number">// 04</span>
+    <h2>The four rules (Shunting-yard algorithm)</h2>
+    <p>The algorithm scans the input from left to right. For each character it encounters, exactly one of these rules applies:</p>
+
+    <div style="margin-top:1rem;">
+      <div class="rule-row" style="padding-top:0;">
+        <div class="rule-num rn-teal">1</div>
+        <div>
+          <div class="rule-title">Operand (letter or digit)</div>
+          <div class="rule-body">Write it directly to the output. Operands are never held — they flow straight through. This is why operands appear in the output in their original left-to-right order.</div>
+        </div>
+      </div>
+      <div class="rule-row">
+        <div class="rule-num rn-coral">2</div>
+        <div>
+          <div class="rule-title">Operator (+, −, *, /, $)</div>
+          <div class="rule-body">While the stack is not empty, the top is not <code>(</code>, and the top operator has higher (or equal + left-assoc) precedence over the incoming one — pop it to output. Then push the new operator. This is where precedence is enforced.</div>
+        </div>
+      </div>
+      <div class="rule-row">
+        <div class="rule-num rn-purple">3</div>
+        <div>
+          <div class="rule-title">Left parenthesis (</div>
+          <div class="rule-body">Push immediately onto the stack. It acts as a barrier — nothing inside the parentheses can pop past it. It has the lowest effective precedence when on the stack.</div>
+        </div>
+      </div>
+      <div class="rule-row">
+        <div class="rule-num rn-amber">4</div>
+        <div>
+          <div class="rule-title">Right parenthesis )</div>
+          <div class="rule-body">Pop and output everything until the matching <code>(</code> is found. Then discard both parentheses — they were just scope markers and don't appear in postfix output at all.</div>
+        </div>
+      </div>
+      <div class="rule-row">
+        <div class="rule-num rn-green">✓</div>
+        <div>
+          <div class="rule-title">End of input — flush the stack</div>
+          <div class="rule-body">Pop and output every remaining operator on the stack. These are lower-precedence operators that were waiting for something to trigger their release — now there's nothing left to wait for.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- PART 5 — INTERACTIVE TRACE -->
+  <div class="section" id="part5">
+    <span class="section-number">// 05</span>
+    <h2>Live step-by-step trace</h2>
+    <p>Type any infix expression using single-character operands (A–Z, 0–9), operators (+, −, *, /, $), and parentheses. Then step through token by token.</p>
+
+    <div class="trace-section">
+      <div class="trace-header">
+        <label>Expression:</label>
+        <input id="traceInput" class="trace-input" type="text" value="A+B*C-D" spellcheck="false" autocomplete="off">
+        <button class="btn btn-primary" onclick="initTrace()">Reset</button>
+      </div>
+      <div class="trace-body">
+        <div class="token-strip" id="tokenStrip"></div>
+
+        <div class="trace-cols">
+          <div class="stack-col">
+            <div class="col-label">Stack (top ↑)</div>
+            <div class="stack-visual" id="stackViz">
+              <span class="stack-empty-label">empty</span>
+            </div>
+          </div>
+          <div class="output-col">
+            <div class="col-label">Output string</div>
+            <div class="output-display" id="outputDisplay">
+              <span class="out-placeholder">—</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-desc-box" id="stepDesc">Press <span>Next step →</span> to begin tracing.</div>
+
+        <div class="btn-row">
+          <button class="btn btn-primary" id="btnNext" onclick="nextStep()">Next step →</button>
+          <button class="btn" onclick="runAll()">Run all</button>
+          <button class="btn" onclick="initTrace()">↺ Reset</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- PART 6 — CODE EXPLAINED -->
+  <div class="section" id="part6">
+    <span class="section-number">// 06</span>
+    <h2>Every function in the code — explained</h2>
+    <p>Click any function to expand its explanation.</p>
+
+    <div style="margin-top:1.25rem;">
+
+      <div class="fn-item" onclick="toggleFn(this)">
+        <div class="fn-header">
+          <div>
+            <div class="fn-name">IsOperand(char C)</div>
+            <div class="fn-tag">Character classifier</div>
+          </div>
+          <div class="fn-chevron">▾</div>
+        </div>
+        <div class="fn-body">
+          Returns <code>true</code> if the character is a digit 0–9 or a letter a–z or A–Z. It uses three ASCII range comparisons. This is the simplest guard in the algorithm — if it's a letter or digit, it's a value, not an instruction.
+          <br><br>
+          <strong style="color:var(--text)">Limitation:</strong> This only handles single-character operands. Multi-digit numbers like <code>42</code> would be treated as two separate operands <code>4</code> and <code>2</code>. Real parsers handle this with a tokenizer that groups consecutive digits first.
+        </div>
+      </div>
+
+      <div class="fn-item" onclick="toggleFn(this)">
+        <div class="fn-header">
+          <div>
+            <div class="fn-name">IsOperator(char C)</div>
+            <div class="fn-tag">Character classifier</div>
+          </div>
+          <div class="fn-chevron">▾</div>
+        </div>
+        <div class="fn-body">
+          Returns <code>true</code> only for the five expected operators: <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, and <code>$</code>. This is an explicit whitelist — nothing slips through by accident. The <code>$</code> symbol is used here as a stand-in for exponentiation (often written <code>^</code> in math, but <code>^</code> is the XOR operator in C++ so a different symbol was chosen).
+        </div>
+      </div>
+
+      <div class="fn-item" onclick="toggleFn(this)">
+        <div class="fn-header">
+          <div>
+            <div class="fn-name">GetOperatorWeight(char op)</div>
+            <div class="fn-tag">Precedence lookup — contains a bug</div>
+          </div>
+          <div class="fn-chevron">▾</div>
+        </div>
+        <div class="fn-body">
+          Meant to return 1 for +/-, 2 for */, and 3 for $. However, the missing <code>break</code> statements cause all operators to fall through to weight 3 (only <code>$</code> actually returns correctly because it's the last case before the closing brace sets the final value). In practice, the algorithm still runs but precedence between +/-  and */  is not properly enforced.
+          <br><br>
+          This is one of the most common C++ beginner mistakes. The fix is simple: add <code>break;</code> after each case group.
+        </div>
+      </div>
+
+      <div class="fn-item" onclick="toggleFn(this)">
+        <div class="fn-header">
+          <div>
+            <div class="fn-name">IsRightAssociative(char op)</div>
+            <div class="fn-tag">Associativity check</div>
+          </div>
+          <div class="fn-chevron">▾</div>
+        </div>
+        <div class="fn-body">
+          Returns <code>true</code> only for <code>$</code> (exponentiation). All other operators are left-associative. This function is consulted by <code>HasHigherPrecedence</code> to handle the special case where two operators have equal weight — normally you pop, but for right-associative operators you do not.
+          <br><br>
+          Mathematically: <code>2 ^ 3 ^ 2</code> means <code>2 ^ (3^2) = 2^9 = 512</code>, not <code>(2^3) ^ 2 = 8^2 = 64</code>.
+        </div>
+      </div>
+
+      <div class="fn-item" onclick="toggleFn(this)">
+        <div class="fn-header">
+          <div>
+            <div class="fn-name">HasHigherPrecedence(char op1, char op2)</div>
+            <div class="fn-tag">Core decision function</div>
+          </div>
+          <div class="fn-chevron">▾</div>
+        </div>
+        <div class="fn-body">
+          This is the brain of the algorithm. <code>op1</code> is the operator on top of the stack; <code>op2</code> is the one just arrived from the input. It answers the question: "Should op1 be popped before op2 is pushed?"
+          <br><br>
+          The answer is yes (<code>true</code>) if:<br>
+          — op1 has strictly higher weight than op2, OR<br>
+          — they have equal weight AND op1 is left-associative.
+          <br><br>
+          The answer is no (<code>false</code>) if op1 has lower weight, or if they are equal weight and op1 is right-associative (like <code>$</code>).
+        </div>
+      </div>
+
+      <div class="fn-item" onclick="toggleFn(this)">
+        <div class="fn-header">
+          <div>
+            <div class="fn-name">InfixToPostfix(string expression)</div>
+            <div class="fn-tag">Main conversion function</div>
+          </div>
+          <div class="fn-chevron">▾</div>
+        </div>
+        <div class="fn-body">
+          The top-level function. It owns the stack and the output string. It scans the expression character by character, skips spaces and commas, and applies the four rules using all the helper functions above. At the end, it flushes any remaining operators off the stack into the output.
+          <br><br>
+          This is a direct, clean implementation of Dijkstra's Shunting-yard algorithm. The time complexity is O(n) — every character is processed at most twice (once when read, once when popped from the stack). Space complexity is O(n) for the stack in the worst case.
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- PART 7 — MANUAL EXAMPLE -->
+  <div class="section" id="part7">
+    <span class="section-number">// 07</span>
+    <h2>Full manual trace of A+B*C−D</h2>
+    <p>Reading this table is the best way to confirm your understanding before an exam. Trace every row and ask yourself: why did the stack change the way it did?</p>
+
+    <div class="card" style="overflow-x:auto;">
+      <table class="trace-table">
+        <thead>
+          <tr>
+            <th>Token</th>
+            <th>Action</th>
+            <th>Stack</th>
+            <th>Output</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="td-tok">A</td><td class="td-action">Operand → output directly</td><td class="td-stack">[ ]</td><td class="td-out">A</td></tr>
+          <tr><td class="td-tok">+</td><td class="td-action">Stack empty → push</td><td class="td-stack">[+]</td><td class="td-out">A</td></tr>
+          <tr><td class="td-tok">B</td><td class="td-action">Operand → output directly</td><td class="td-stack">[+]</td><td class="td-out">AB</td></tr>
+          <tr><td class="td-tok">*</td><td class="td-action">* > + in precedence → push (don't pop +)</td><td class="td-stack">[+, *]</td><td class="td-out">AB</td></tr>
+          <tr><td class="td-tok">C</td><td class="td-action">Operand → output directly</td><td class="td-stack">[+, *]</td><td class="td-out">ABC</td></tr>
+          <tr><td class="td-tok">−</td><td class="td-action">− ≤ * → pop *; − ≤ + → pop +; push −</td><td class="td-stack">[−]</td><td class="td-out">ABC*+</td></tr>
+          <tr><td class="td-tok">D</td><td class="td-action">Operand → output directly</td><td class="td-stack">[−]</td><td class="td-out">ABC*+D</td></tr>
+          <tr><td class="td-tok">END</td><td class="td-action">Flush stack → pop −</td><td class="td-stack">[ ]</td><td class="td-out">ABC*+D−</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card card-accent-teal" style="margin-top:1rem;">
+      <div class="card-label label-teal">Why did − pop both * and + ?</div>
+      <p>When <code>−</code> arrives, the stack top is <code>*</code>. Since <code>−</code> has weight 1 and <code>*</code> has weight 2, <code>HasHigherPrecedence(*,−)</code> returns true → pop <code>*</code>. Now the new top is <code>+</code>. Since <code>−</code> and <code>+</code> have equal weight 1 and both are left-associative, <code>HasHigherPrecedence(+,−)</code> returns true → pop <code>+</code>. Now the stack is empty, so <code>−</code> is pushed.</p>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- PART 8 -->
+  <div class="section" id="part8">
+    <span class="section-number">// 08</span>
+    <h2>Bugs, limitations, and design choices</h2>
+
+    <div class="card-grid">
+      <div class="card card-accent-coral">
+        <div class="card-label label-coral">Bug</div>
+        <h3>Missing break in switch</h3>
+        <p><code>GetOperatorWeight</code> falls through all cases, giving every operator weight 3. The fix: add <code>break;</code> after each case block.</p>
+      </div>
+      <div class="card card-accent-amber">
+        <div class="card-label label-amber">Limitation</div>
+        <h3>Single-character operands only</h3>
+        <p>Multi-digit numbers like <code>12</code> are treated as two separate tokens. A real tokenizer would group consecutive digits first.</p>
+      </div>
+      <div class="card card-accent-amber">
+        <div class="card-label label-amber">Limitation</div>
+        <h3>No parenthesis mismatch detection</h3>
+        <p>An expression like <code>A+(B</code> silently produces wrong output. A robust implementation checks for unmatched parentheses and throws an error.</p>
+      </div>
+      <div class="card card-accent-teal">
+        <div class="card-label label-teal">Design choice</div>
+        <h3>Spaces and commas as delimiters</h3>
+        <p>Spaces and commas are explicitly skipped. This is intentional — it allows more human-readable input without breaking the algorithm.</p>
+      </div>
+      <div class="card card-accent-teal">
+        <div class="card-label label-teal">Design choice</div>
+        <h3>$ for exponentiation</h3>
+        <p><code>^</code> is the bitwise XOR operator in C++. Using <code>$</code> avoids operator collision while still demonstrating right-associativity.</p>
+      </div>
+      <div class="card card-accent-purple">
+        <div class="card-label label-purple">Complexity</div>
+        <h3>O(n) time, O(n) space</h3>
+        <p>Each character is processed at most twice — once on read, once on pop. Stack size grows at most to the number of operators. This is optimal.</p>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+const PREC_CORRECT = { '+':1, '-':1, '*':2, '/':2, '$':3 };
+const RIGHT_ASSOC = { '$': true };
+
+function isOperand(c) { return /[a-zA-Z0-9]/.test(c); }
+function isOp(c) { return c in PREC_CORRECT; }
+function hasPrecedence(op1, op2) {
+  const w1 = PREC_CORRECT[op1]||0, w2 = PREC_CORRECT[op2]||0;
+  if (w1 === w2) return !RIGHT_ASSOC[op1];
+  return w1 > w2;
+}
+
+function tokenClass(c) {
+  if (isOperand(c)) return 'is-operand';
+  if (isOp(c)) return 'is-operator';
+  if (c === '(' || c === ')') return 'is-paren';
+  return '';
+}
+
+let traceSteps = [], traceTokens = [], stepIdx = 0;
+
+function buildSteps(expr) {
+  const chars = expr.split('').filter(c => c !== ' ' && c !== ',');
+  let stack = [], output = '', steps = [];
+  for (let i = 0; i < chars.length; i++) {
+    const c = chars[i];
+    let desc = '', popped = [];
+    if (isOperand(c)) {
+      output += c;
+      desc = `"${c}" is an operand — write it directly to the output. Operands are never held.`;
+    } else if (isOp(c)) {
+      while (stack.length && stack[stack.length-1] !== '(' && hasPrecedence(stack[stack.length-1], c)) {
+        const p = stack.pop(); output += p; popped.push(p);
+      }
+      stack.push(c);
+      if (popped.length)
+        desc = `"${c}" operator arrives. Top of stack (${popped.map(x=>`"${x}"`).join(', ')}) has higher/equal precedence → pop to output. Then push "${c}".`;
+      else
+        desc = `"${c}" operator arrives. Stack is empty or top has lower precedence — nothing to pop. Push "${c}" onto stack.`;
+    } else if (c === '(') {
+      stack.push(c);
+      desc = `"(" is a left parenthesis — push it as a barrier. Operators inside cannot pop past it.`;
+    } else if (c === ')') {
+      while (stack.length && stack[stack.length-1] !== '(') {
+        const p = stack.pop(); output += p; popped.push(p);
+      }
+      stack.pop();
+      desc = `")" right parenthesis — pop until matching "(": ${popped.length ? popped.map(x=>`"${x}"`).join(', ') : 'nothing'} → output. Discard both parentheses.`;
+    } else { continue; }
+    steps.push({ charIdx: i, stack: [...stack], output, desc });
+  }
+  let flushed = [];
+  while (stack.length) { const p = stack.pop(); output += p; flushed.push(p); }
+  steps.push({
+    charIdx: chars.length,
+    stack: [],
+    output,
+    desc: `End of input. Flush the stack — pop ${flushed.length ? flushed.map(x=>`"${x}"`).join(', ') : 'nothing'} to output. Final result: "${output}"`
+  });
+  return { steps, chars };
+}
+
+function renderTokenStrip(charIdx) {
+  const strip = document.getElementById('tokenStrip');
+  strip.innerHTML = traceTokens.map((c, i) => {
+    let cls = 'tok ' + tokenClass(c);
+    if (charIdx >= 0 && i === charIdx) cls += ' active';
+    else if (charIdx >= 0 && i < charIdx) cls += ' done';
+    return `<div class="${cls}">${c === '-' ? '−' : c}</div>`;
+  }).join('');
+}
+
+function renderStack(stackData) {
+  const viz = document.getElementById('stackViz');
+  if (!stackData.length) {
+    viz.innerHTML = '<span class="stack-empty-label">empty</span>';
+    return;
+  }
+  viz.innerHTML = stackData.map(c =>
+    `<div class="stack-cell">${c === '-' ? '−' : c}</div>`
+  ).join('');
+}
+
+function renderOutput(str) {
+  const disp = document.getElementById('outputDisplay');
+  if (!str) { disp.innerHTML = '<span class="out-placeholder">—</span>'; return; }
+  disp.innerHTML = str.split('').map(c =>
+    `<span class="out-char">${c === '-' ? '−' : c}</span>`
+  ).join('');
+}
+
+function renderDesc(text) {
+  const box = document.getElementById('stepDesc');
+  box.innerHTML = text.replace(/"([^"]+)"/g, '<span>"$1"</span>');
+}
+
+function initTrace() {
+  const expr = document.getElementById('traceInput').value || 'A+B*C-D';
+  const result = buildSteps(expr);
+  traceSteps = result.steps;
+  traceTokens = result.chars;
+  stepIdx = 0;
+  renderTokenStrip(-1);
+  renderStack([]);
+  renderOutput('');
+  renderDesc('Press <span>Next step →</span> to begin tracing.');
+  document.getElementById('btnNext').disabled = false;
+}
+
+function nextStep() {
+  if (stepIdx >= traceSteps.length) return;
+  const s = traceSteps[stepIdx];
+  renderTokenStrip(s.charIdx);
+  renderStack(s.stack);
+  renderOutput(s.output);
+  renderDesc(s.desc);
+  stepIdx++;
+  if (stepIdx >= traceSteps.length) document.getElementById('btnNext').disabled = true;
+}
+
+function runAll() {
+  if (!traceSteps.length) return;
+  const s = traceSteps[traceSteps.length - 1];
+  renderTokenStrip(s.charIdx);
+  renderStack(s.stack);
+  renderOutput(s.output);
+  renderDesc(s.desc);
+  stepIdx = traceSteps.length;
+  document.getElementById('btnNext').disabled = true;
+}
+
+function toggleFn(el) {
+  const body = el.querySelector('.fn-body');
+  const isOpen = el.classList.contains('open');
+  el.classList.toggle('open', !isOpen);
+  body.classList.toggle('open', !isOpen);
+}
+
+// Intersection observer for scroll animations
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.08 });
+document.querySelectorAll('.section').forEach(s => observer.observe(s));
+
+// Smooth scroll for nav pills
+document.querySelectorAll('.nav-pill').forEach(a => {
+  a.addEventListener('click', e => {
+    e.preventDefault();
+    const target = document.querySelector(a.getAttribute('href'));
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
+
+initTrace();
+</script>
+</body>
+</html>
