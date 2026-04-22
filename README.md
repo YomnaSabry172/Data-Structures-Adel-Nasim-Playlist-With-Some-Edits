@@ -1,27 +1,32 @@
-<h1 align="center">Data Structures – Study Repo with Interactive Additions</h1>
+<h1 align="center">Data Structures – Edited Study Repo</h1>
 
 <p align="center">
-  A personal edited fork of Adel Nasim's Data Structures repository, with extra study notes and interactive HTML explanations.
+  A study-focused fork of Adel Nasim's Data Structures repository,<br>
+  with gradual edits and interactive HTML explanations.
 </p>
 
 <p align="center">
-  <img alt="Status" src="https://img.shields.io/badge/status-in%20progress-blue">
-  <img alt="Topics" src="https://img.shields.io/badge/topics-data%20structures-success">
-  <img alt="Language" src="https://img.shields.io/badge/content-study%20notes%20%2B%20interactive%20HTML-orange">
+  <img src="https://img.shields.io/badge/status-in%20progress-blue" alt="Status">
+  <img src="https://img.shields.io/badge/focus-learning%20%26%20revision-success" alt="Focus">
+  <img src="https://img.shields.io/badge/content-data%20structures-orange" alt="Content">
+  <img src="https://img.shields.io/badge/extra-interactive%20HTML-informational" alt="Interactive HTML">
 </p>
 
 ---
 
-## Overview
+## About This Repository
 
-This repository started as a fork of **Adel Nasim's Data Structures** source-code collection.  
-I am gradually editing it into a more study-friendly version by organizing topics and adding simple interactive files to explain some concepts in a clearer way.
+This repository is my edited version of the original **Data Structures** repository by **Adel Nasim**.
 
-So this repo is not only for source code, but also for:
-- revising data structure topics
-- reading topic-by-topic notes
-- exploring interactive explanations
-- building a clearer study reference for myself and others
+The purpose of this fork is to gradually turn the material into a more helpful study space by keeping the original topic base while adding:
+
+- a more revision-friendly presentation
+- study-oriented edits
+- interactive HTML explanations for selected topics
+- ongoing improvements over time
+
+So this repo is meant to be more than just a collection of files.  
+It is also a personal learning and revision project.
 
 ---
 
@@ -29,24 +34,31 @@ So this repo is not only for source code, but also for:
 
 This work is based on the original repository by **Adel Nasim**.
 
-Credits for the original topic collection and base material go to the original repo.
+- **Original repository:** [Adel Nasim Data Structures](https://github.com/Adel-Nasim/Data-Structures)
+- **Original playlist:** [Add the playlist link here]
+
+> You can replace the playlist line above with the exact playlist link from the original README.
 
 ---
 
-## What is different in this fork?
+## What Is Different in This Fork?
 
-This edited version is being expanded with:
-- cleaner presentation of topics
-- additional study-focused materials
-- interactive HTML explanations for selected concepts
-- gradual improvements to make the repo more helpful for revision
+This fork keeps the original learning base, but it is being expanded in a more study-friendly way.
+
+### This version includes:
+- topic material for revision
+- extra edits for learning purposes
+- interactive HTML pages for selected concepts
+- gradual enhancements in explanation and presentation
+
+The goal is to make the repository easier to review, follow, and learn from.
 
 ---
 
-## Current repository content
+## Repository Content
 
-### Topic files
-The repository currently includes text files for many core topics such as:
+This repository contains material related to important data structures topics, including:
+
 - Array Based List
 - Linked List
 - Doubly Linked List
@@ -66,85 +78,91 @@ The repository currently includes text files for many core topics such as:
 - Heap Sort
 - Binary Search Tree
 
-### Interactive files
-Some concepts are also being explained with HTML pages, such as:
-- `infix_postfix.html`
-- `stack_study_guide.html`
-
-> More interactive pages may be added over time.
+It also includes interactive HTML files for explaining some topics in a more visual and guided way.
 
 ---
 
-## How to use this repo
+## Interactive Additions
 
-You can use this repository in different ways:
+Part of this fork is focused on making some concepts easier to understand through simple interactive pages.
 
-### 1) Quick revision
-Open the `.txt` files and revise a topic directly.
+### Current examples
+- `infix_postfix.html`
+- `stack_study_guide.html`
 
-### 2) Interactive understanding
-Open the HTML files in your browser for a more visual or guided explanation.
+More interactive files may be added gradually as the repository develops.
 
-### 3) Study path suggestion
-A simple order you can follow:
+<details>
+  <summary><strong>Why interactive files?</strong></summary>
 
-1. Basics / Arrays  
+  Some data structures ideas are much easier to understand when they are shown step by step instead of only being written as plain notes or code.
+
+  These HTML files are meant to support that by giving a more guided and visual explanation for selected topics.
+
+</details>
+
+---
+
+## How to Use This Repo
+
+You can use this repository in more than one way.
+
+### 1. Quick Revision
+Open the topic files directly and review the concept you need.
+
+### 2. Interactive Learning
+Open the HTML files in your browser for a more visual explanation of selected topics.
+
+### 3. Topic-by-Topic Study
+A simple study path could be:
+
+1. Arrays  
 2. Linked Lists  
 3. Stacks  
 4. Queues  
-5. Expression problems  
+5. Expression-related problems  
 6. Searching  
 7. Sorting  
 8. Trees  
 
 ---
 
-## Featured interactive pages
+## Purpose of This Fork
 
-<details>
-  <summary><strong>Infix to Postfix</strong></summary>
+This repository is mainly intended for:
 
-This page is meant to help in understanding how expressions are converted step by step.
+- personal study and revision
+- making data structures easier to review
+- building a clearer learning reference over time
+- combining topic material with interactive explanation
 
-</details>
-
-<details>
-  <summary><strong>Stack Study Guide</strong></summary>
-
-This page is meant to support stack revision in a more visual and easier-to-follow format.
-
-</details>
+It is still growing, and more improvements may be added gradually.
 
 ---
 
-## Repository goal
+## Work in Progress
 
-The goal of this fork is to turn the material into a more understandable and revision-friendly study space, especially by adding small interactive explanations beside the original topic files.
+This repository is still under development.
 
----
-
-## Work in progress
-
-This repository is still being improved.  
-Some files are original, some are edited, and more interactive explanations are planned.
-
----
-
-## Notes
-
-- This is an educational/study repository.
-- It is mainly based on the original work by Adel Nasim.
-- My additions focus on explanation, organization, and interactive learning support.
+I am currently continuing to improve it and add more study-supportive material, including interactive explanation files for some topics.
 
 ---
 
 ## Credits
 
-- Original repository and topic base: **Adel Nasim**
-- Fork edits and interactive additions: **Yomna Sabry**
+- **Original repository and topic base:** Adel Nasim
+- **Fork edits and interactive additions:** Yomna Sabry
+
+---
+
+## Notes
+
+- This is an educational and study-focused repository.
+- The original base material belongs to the original source repository.
+- This fork is intended to build on that material in a clearer and more revision-friendly way.
 
 ---
 
 ## Contributions
 
-This is mainly a personal learning project, but suggestions for improving explanations or organization are always welcome.
+This is mainly a personal learning project, but suggestions for improving organization, clarity, or explanation are always welcome through my email: yomnasabry252@gmail.com
