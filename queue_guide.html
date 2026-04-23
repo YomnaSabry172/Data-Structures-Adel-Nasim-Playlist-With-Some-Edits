@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Queue Data Structures — C++ Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f14;
+    --surface: #13161e;
+    --surface2: #1a1e28;
+    --border: #242836;
+    --border2: #2e3447;
+    --text: #e8eaf0;
+    --text2: #8b90a0;
+    --text3: #555c70;
+    --accent: #5b8af5;
+    --accent-dim: #1e2d52;
+    --green: #4ade80;
+    --green-dim: #132a1e;
+    --amber: #fbbf24;
+    --amber-dim: #2a1f0a;
+    --red: #f87171;
+    --red-dim: #2a1010;
+    --purple: #a78bfa;
+    --purple-dim: #1e1530;
+    --teal: #2dd4bf;
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'Sora', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  /* ---- HEADER ---- */
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 2rem 2.5rem 1.5rem;
+    background: var(--surface);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-top {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.2rem;
+  }
+  .badge {
+    background: var(--accent-dim);
+    color: var(--accent);
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 4px;
+    letter-spacing: 0.05em;
+  }
+  .badge.green { background: var(--green-dim); color: var(--green); }
+  h1 {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: -0.02em;
+  }
+  h1 span { color: var(--accent); }
+
+  /* ---- NAV TABS ---- */
+  nav {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+  nav button {
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 400;
+    padding: 7px 16px;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  nav button:hover { background: var(--surface2); color: var(--text); }
+  nav button.active {
+    background: var(--accent-dim);
+    color: var(--accent);
+    border-color: var(--accent);
+    font-weight: 500;
+  }
+
+  /* ---- LAYOUT ---- */
+  main {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2.5rem 2rem 4rem;
+  }
+
+  .section { display: none; animation: fadeIn 0.2s ease; }
+  .section.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ---- TYPOGRAPHY ---- */
+  .page-title {
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  .page-sub {
+    font-size: 14px;
+    color: var(--text2);
+    margin-bottom: 2rem;
+    font-weight: 300;
+  }
+  h2 {
+    font-size: 17px;
+    font-weight: 500;
+    color: var(--text);
+    margin: 2rem 0 0.75rem;
+    letter-spacing: -0.01em;
+  }
+  h3 {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 10px;
+  }
+  p { color: var(--text2); font-size: 14px; line-height: 1.8; margin-bottom: 0.75rem; }
+  p strong, p b { color: var(--text); font-weight: 500; }
+  code { font-family: var(--mono); font-size: 12.5px; background: var(--surface2); padding: 2px 6px; border-radius: 4px; color: var(--teal); }
+
+  /* ---- CARD / BOX ---- */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.25rem 1.5rem;
+    margin: 1rem 0;
+  }
+  .card.info { border-left: 3px solid var(--accent); }
+  .card.warn { border-left: 3px solid var(--amber); background: var(--amber-dim); }
+  .card.ok { border-left: 3px solid var(--green); background: var(--green-dim); }
+  .card.warn p, .card.ok p { margin-bottom: 0; }
+  .card.warn p { color: var(--amber); }
+  .card.ok p { color: var(--green); }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 1rem 0;
+  }
+  @media (max-width: 600px) { .two-col { grid-template-columns: 1fr; } }
+
+  hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+
+  /* ---- CODE BLOCK ---- */
+  .code-wrap {
+    background: #090b0f;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin: 1rem 0;
+    overflow: hidden;
+  }
+  .code-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .code-lang {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text3);
+    letter-spacing: 0.05em;
+  }
+  .dot-row { display: flex; gap: 6px; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .dot.r { background: #f87171; }
+  .dot.y { background: #fbbf24; }
+  .dot.g { background: #4ade80; }
+  .code-body { overflow-x: auto; padding: 1.25rem 1.5rem; }
+  pre { font-family: var(--mono); font-size: 12.5px; line-height: 1.9; color: #c9d1e0; white-space: pre; }
+  .kw { color: #7eb8f7; }
+  .ty { color: #4ec9b0; }
+  .cm { color: #4d5566; font-style: italic; }
+  .st { color: #ce9178; }
+  .nm { color: #dcdcaa; }
+  .num { color: #b5cea8; }
+  .pp { color: #c586c0; }
+
+  /* ---- QUEUE VISUAL ---- */
+  .q-vis-wrap { margin: 1.25rem 0; }
+  .q-vis {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    margin-bottom: 10px;
+  }
+  .q-cell {
+    width: 56px;
+    height: 56px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+    position: relative;
+    border: 1.5px solid var(--border);
+  }
+  .q-cell.filled { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+  .q-cell.empty { background: var(--surface); color: var(--text3); }
+  .q-cell .idx { font-size: 9px; font-weight: 400; color: var(--text3); margin-top: 2px; font-family: var(--mono); }
+  .q-cell.front-cell { border-color: var(--green); }
+  .q-cell.rear-cell { border-color: var(--purple); }
+  .q-cell.both-cell { border-color: var(--amber); }
+  .q-label { font-size: 10px; margin-top: 3px; }
+  .q-label.f { color: var(--green); }
+  .q-label.r { color: var(--purple); }
+  .q-label.b { color: var(--amber); }
+
+  .ptr-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+  .ptr {
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 5px;
+    font-weight: 500;
+  }
+  .ptr.f { background: var(--green-dim); color: var(--green); }
+  .ptr.r { background: var(--purple-dim); color: var(--purple); }
+  .ptr.c { background: var(--surface2); color: var(--text2); }
+
+  .status {
+    font-size: 13px;
+    font-family: var(--mono);
+    padding: 10px 14px;
+    border-radius: 7px;
+    background: var(--surface2);
+    color: var(--text2);
+    min-height: 40px;
+    border-left: 3px solid var(--border2);
+    margin-bottom: 12px;
+    transition: all 0.2s;
+  }
+  .status.ok { border-left-color: var(--green); color: var(--green); background: var(--green-dim); }
+  .status.err { border-left-color: var(--red); color: var(--red); background: var(--red-dim); }
+
+  .controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  input[type=number] {
+    width: 72px;
+    padding: 8px 10px;
+    border-radius: 7px;
+    border: 1px solid var(--border2);
+    background: var(--surface2);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 13px;
+    outline: none;
+    transition: border 0.15s;
+  }
+  input[type=number]:focus { border-color: var(--accent); }
+  button.ctrl {
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 500;
+    padding: 8px 18px;
+    border-radius: 7px;
+    border: 1px solid var(--border2);
+    background: var(--surface2);
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  button.ctrl:hover { border-color: var(--border); background: var(--surface); }
+  button.ctrl:active { transform: scale(0.97); }
+  button.ctrl.enq { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+  button.ctrl.deq { background: var(--red-dim); border-color: var(--red); color: var(--red); }
+
+  /* ---- STEPS ---- */
+  .steps { display: flex; flex-direction: column; gap: 10px; margin: 1rem 0; }
+  .step { display: flex; gap: 12px; align-items: flex-start; }
+  .step-n {
+    width: 26px; height: 26px; min-width: 26px;
+    border-radius: 50%;
+    background: var(--accent-dim);
+    color: var(--accent);
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    margin-top: 2px;
+  }
+  .step-t { font-size: 14px; color: var(--text2); line-height: 1.7; }
+  .step-t strong { color: var(--text); font-weight: 500; }
+
+  /* ---- LL VISUAL ---- */
+  .ll-vis {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0;
+    min-height: 80px;
+    margin: 1.25rem 0;
+  }
+  .ll-node-wrap { display: flex; flex-direction: column; align-items: center; }
+  .ll-node-lbl { font-size: 10px; font-family: var(--mono); margin-bottom: 4px; height: 14px; }
+  .ll-node-lbl.f { color: var(--green); }
+  .ll-node-lbl.r { color: var(--purple); }
+  .ll-node-lbl.b { color: var(--amber); }
+  .ll-box {
+    border: 1.5px solid var(--border2);
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    font-family: var(--mono);
+    font-size: 12px;
+  }
+  .ll-data {
+    padding: 8px 14px;
+    background: var(--surface2);
+    color: var(--text);
+    font-weight: 600;
+    font-size: 14px;
+    border-right: 1px solid var(--border);
+  }
+  .ll-next {
+    padding: 8px 10px;
+    background: var(--surface);
+    color: var(--text3);
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .ll-arrow { font-size: 20px; color: var(--text3); margin: 18px 4px 0; }
+  .ll-null {
+    border: 1.5px dashed var(--border2);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text3);
+    margin-top: 18px;
+  }
+  .ll-empty { color: var(--text3); font-size: 13px; font-family: var(--mono); }
+
+  /* ---- COMPARE TABLE ---- */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 1rem 0; }
+  th { text-align: left; font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text3); padding: 10px 14px; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--text2); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  td:first-child { color: var(--text); font-weight: 500; }
+  .yes { color: var(--green); font-weight: 500; }
+  .no { color: var(--red); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <span class="badge">C++</span>
+    <span class="badge green">Data Structures</span>
+    <h1>Queue — <span>Complete Interactive Guide</span></h1>
+  </div>
+  <nav>
+    <button class="active" onclick="show('v9',this)">#09 — What is a queue?</button>
+    <button onclick="show('v10',this)">#10 — Circular array queue</button>
+    <button onclick="show('v11',this)">#11 — Linked list queue</button>
+  </nav>
+</header>
+
+<main>
+
+<!-- =========== VIDEO 9 =========== -->
+<div id="v9" class="section active">
+  <p class="page-title">What is a queue?</p>
+  <p class="page-sub">Video #09 — Adil Naseem — Data Structures playlist</p>
+
+  <p>A <strong>queue</strong> is a data structure that follows the <strong>FIFO</strong> principle — <em>First In, First Out</em>. The element that enters first is the one that leaves first.</p>
+
+  <div class="card info">
+    <h3>Real-life analogy</h3>
+    <p>Think of a queue at a bank or cashier. The first person to stand in line is the first to be served. Nobody can cut in from the front. This is exactly how a queue works in code.</p>
+  </div>
+
+  <h2>Two operations — that's all</h2>
+  <div class="two-col">
+    <div class="card">
+      <h3>Enqueue (insert)</h3>
+      <p>Adding a new element always happens at the <strong>rear</strong> (back) of the queue.</p>
+    </div>
+    <div class="card">
+      <h3>Dequeue (remove)</h3>
+      <p>Removing an element always happens from the <strong>front</strong> of the queue.</p>
+    </div>
+  </div>
+
+  <h2>The problem with a simple linear array</h2>
+  <p>Imagine an array of size 5. You enqueue 5 elements, then dequeue 3. The <code>front</code> pointer moves forward — but those 3 freed cells at the start are <strong>wasted forever</strong>. Even though there is space, the queue reports "full" because <code>rear</code> reached the last index. This is the <strong>false overflow</strong> problem.</p>
+
+  <div class="card warn">
+    <p>Problem: after dequeues, the front cells can never be reused in a simple array queue. This is called "false overflow" — the queue thinks it is full when it is not.</p>
+  </div>
+
+  <div class="q-vis-wrap">
+    <p style="font-size:12px;color:var(--text3);margin-bottom:10px;font-family:var(--mono);">// After 5 enqueues and 3 dequeues:</p>
+    <div class="q-vis">
+      <div class="q-cell empty" style="border-color:var(--red);opacity:0.5;">
+        <span style="font-size:10px;color:var(--red);">wasted</span>
+        <span class="idx">[0]</span>
+      </div>
+      <div class="q-cell empty" style="border-color:var(--red);opacity:0.5;">
+        <span style="font-size:10px;color:var(--red);">wasted</span>
+        <span class="idx">[1]</span>
+      </div>
+      <div class="q-cell empty" style="border-color:var(--red);opacity:0.5;">
+        <span style="font-size:10px;color:var(--red);">wasted</span>
+        <span class="idx">[2]</span>
+      </div>
+      <div class="q-cell front-cell filled">40
+        <span class="q-label f">front</span>
+        <span class="idx">[3]</span>
+      </div>
+      <div class="q-cell rear-cell filled">50
+        <span class="q-label r">rear</span>
+        <span class="idx">[4]</span>
+      </div>
+    </div>
+    <p style="font-size:12px;color:var(--text3);font-family:var(--mono);">// rear == 4 == SIZE-1. Cannot enqueue even though 3 slots are free!</p>
+  </div>
+
+  <h2>The solution — circular queue</h2>
+  <div class="card ok">
+    <p>A circular queue treats the array as a circle. When rear reaches the last index, it wraps back to index 0 — reusing freed cells. The trick is one formula: <code>rear = (rear + 1) % SIZE</code></p>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <h3>Simple array queue</h3>
+      <p>front and rear only move forward.<br>Wastes space after dequeues.<br>Gets a false overflow.</p>
+    </div>
+    <div class="card">
+      <h3>Circular array queue</h3>
+      <p>rear wraps around using <code>% SIZE</code>.<br>No wasted space.<br>Solves false overflow completely.</p>
+    </div>
+  </div>
+
+  <h2>Quick summary</h2>
+  <div class="steps">
+    <div class="step"><div class="step-n">1</div><div class="step-t"><strong>Queue = FIFO.</strong> First element added is the first removed.</div></div>
+    <div class="step"><div class="step-n">2</div><div class="step-t"><strong>Enqueue</strong> always adds at the rear. <strong>Dequeue</strong> always removes from the front.</div></div>
+    <div class="step"><div class="step-n">3</div><div class="step-t"><strong>Simple array queue</strong> has a false overflow problem — wasted cells after dequeues.</div></div>
+    <div class="step"><div class="step-n">4</div><div class="step-t"><strong>Circular queue</strong> fixes this by wrapping rear back to index 0 using the modulo operator.</div></div>
+  </div>
+</div>
+
+<!-- =========== VIDEO 10 =========== -->
+<div id="v10" class="section">
+  <p class="page-title">Circular array queue</p>
+  <p class="page-sub">Video #10 — Queue implementation using circular array</p>
+
+  <p>We store elements in a fixed-size array. Two pointers — <code>front</code> and <code>rear</code> — track where the queue starts and ends. The magic is the modulo operator that makes them wrap around.</p>
+
+  <div class="two-col">
+    <div class="card info">
+      <h3>isEmpty condition</h3>
+      <p><code>front == -1</code><br>Both start at -1. When the queue is empty, front stays at -1.</p>
+    </div>
+    <div class="card info">
+      <h3>isFull condition</h3>
+      <p><code>(rear + 1) % SIZE == front</code><br>The next position of rear would collide with front.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>The key wrap-around formula</h3>
+    <p><code>rear = (rear + 1) % SIZE</code><br>
+    When rear is at index 4 (last) and SIZE is 5: <code>(4 + 1) % 5 = 0</code>. Rear jumps back to index 0. That is the entire circular trick.</p>
+  </div>
+
+  <h2>Interactive demo — try it</h2>
+
+  <div class="q-vis-wrap">
+    <div class="q-vis" id="circ-vis"></div>
+    <div class="ptr-row">
+      <span class="ptr f" id="cf-lbl">front: -1</span>
+      <span class="ptr r" id="cr-lbl">rear: -1</span>
+      <span class="ptr c" id="cc-lbl">count: 0 / 5</span>
+    </div>
+    <div class="status" id="circ-status">Queue is empty. Enqueue some elements!</div>
+    <div class="controls">
+      <input type="number" id="circ-val" value="10">
+      <button class="ctrl enq" onclick="circEnq()">Enqueue</button>
+      <button class="ctrl deq" onclick="circDeq()">Dequeue</button>
+      <button class="ctrl" onclick="circReset()">Reset</button>
+    </div>
+  </div>
+
+  <hr>
+  <h2>Complete C++ implementation</h2>
+
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="dot-row"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div>
+      <span class="code-lang">circular_queue.cpp</span>
+    </div>
+    <div class="code-body"><pre><span class="pp">#include</span> <span class="st">&lt;iostream&gt;</span>
+<span class="kw">using namespace</span> <span class="ty">std</span>;
+
+<span class="kw">const int</span> SIZE = <span class="num">5</span>;  <span class="cm">// max elements we can hold is SIZE-1 = 4</span>
+                      <span class="cm">// (one slot always kept empty to detect full)</span>
+
+<span class="kw">class</span> <span class="ty">CircularQueue</span> {
+    <span class="kw">int</span> arr[SIZE];
+    <span class="kw">int</span> front;
+    <span class="kw">int</span> rear;
+
+<span class="kw">public</span>:
+    <span class="nm">CircularQueue</span>() {
+        front = -<span class="num">1</span>;   <span class="cm">// -1 = queue is empty</span>
+        rear  = -<span class="num">1</span>;
+    }
+
+    <span class="cm">// ─── isEmpty ────────────────────────────────────────</span>
+    <span class="kw">bool</span> <span class="nm">isEmpty</span>() {
+        <span class="kw">return</span> front == -<span class="num">1</span>;
+    }
+
+    <span class="cm">// ─── isFull ─────────────────────────────────────────</span>
+    <span class="kw">bool</span> <span class="nm">isFull</span>() {
+        <span class="cm">// if rear's NEXT position equals front → no room left</span>
+        <span class="kw">return</span> (rear + <span class="num">1</span>) % SIZE == front;
+    }
+
+    <span class="cm">// ─── enqueue ────────────────────────────────────────</span>
+    <span class="kw">void</span> <span class="nm">enqueue</span>(<span class="kw">int</span> value) {
+        <span class="kw">if</span> (<span class="nm">isFull</span>()) {
+            cout &lt;&lt; <span class="st">"Queue is FULL! Cannot enqueue."</span> &lt;&lt; endl;
+            <span class="kw">return</span>;
+        }
+        <span class="kw">if</span> (<span class="nm">isEmpty</span>()) {
+            front = <span class="num">0</span>;   <span class="cm">// very first element: set both to 0</span>
+            rear  = <span class="num">0</span>;
+        } <span class="kw">else</span> {
+            rear = (rear + <span class="num">1</span>) % SIZE;  <span class="cm">// wrap rear forward</span>
+        }
+        arr[rear] = value;
+        cout &lt;&lt; <span class="st">"Enqueued: "</span> &lt;&lt; value &lt;&lt; endl;
+    }
+
+    <span class="cm">// ─── dequeue ────────────────────────────────────────</span>
+    <span class="kw">void</span> <span class="nm">dequeue</span>() {
+        <span class="kw">if</span> (<span class="nm">isEmpty</span>()) {
+            cout &lt;&lt; <span class="st">"Queue is EMPTY! Cannot dequeue."</span> &lt;&lt; endl;
+            <span class="kw">return</span>;
+        }
+        cout &lt;&lt; <span class="st">"Dequeued: "</span> &lt;&lt; arr[front] &lt;&lt; endl;
+
+        <span class="kw">if</span> (front == rear) {
+            <span class="cm">// that was the last element — reset to empty</span>
+            front = -<span class="num">1</span>;
+            rear  = -<span class="num">1</span>;
+        } <span class="kw">else</span> {
+            front = (front + <span class="num">1</span>) % SIZE;  <span class="cm">// wrap front forward</span>
+        }
+    }
+
+    <span class="cm">// ─── display ────────────────────────────────────────</span>
+    <span class="kw">void</span> <span class="nm">display</span>() {
+        <span class="kw">if</span> (<span class="nm">isEmpty</span>()) { cout &lt;&lt; <span class="st">"Empty."</span> &lt;&lt; endl; <span class="kw">return</span>; }
+        cout &lt;&lt; <span class="st">"Queue: "</span>;
+        <span class="kw">int</span> i = front;
+        <span class="kw">while</span> (<span class="kw">true</span>) {
+            cout &lt;&lt; arr[i] &lt;&lt; <span class="st">" "</span>;
+            <span class="kw">if</span> (i == rear) <span class="kw">break</span>;
+            i = (i + <span class="num">1</span>) % SIZE;
+        }
+        cout &lt;&lt; endl;
+    }
+};
+
+<span class="kw">int</span> <span class="nm">main</span>() {
+    <span class="ty">CircularQueue</span> q;
+    q.<span class="nm">enqueue</span>(<span class="num">10</span>);   <span class="cm">// front=0 rear=0  → [10, _, _, _, _]</span>
+    q.<span class="nm">enqueue</span>(<span class="num">20</span>);   <span class="cm">// front=0 rear=1  → [10,20, _, _, _]</span>
+    q.<span class="nm">enqueue</span>(<span class="num">30</span>);   <span class="cm">// front=0 rear=2  → [10,20,30, _, _]</span>
+    q.<span class="nm">dequeue</span>();    <span class="cm">// removes 10, front=1</span>
+    q.<span class="nm">enqueue</span>(<span class="num">40</span>);   <span class="cm">// rear=3</span>
+    q.<span class="nm">display</span>();    <span class="cm">// prints: 20 30 40</span>
+    <span class="kw">return</span> <span class="num">0</span>;
+}</pre></div>
+  </div>
+
+  <h2>Step-by-step walkthrough</h2>
+  <div class="steps">
+    <div class="step"><div class="step-n">1</div><div class="step-t"><strong>Start:</strong> <code>front = -1, rear = -1</code>. Both are -1, meaning the queue is empty.</div></div>
+    <div class="step"><div class="step-n">2</div><div class="step-t"><strong>First enqueue:</strong> <code>front = 0, rear = 0</code>. The very first element sets both pointers to 0.</div></div>
+    <div class="step"><div class="step-n">3</div><div class="step-t"><strong>Each enqueue after:</strong> <code>rear = (rear + 1) % SIZE</code>. If rear was at index 4, it wraps to 0.</div></div>
+    <div class="step"><div class="step-n">4</div><div class="step-t"><strong>Dequeue:</strong> read <code>arr[front]</code>, then <code>front = (front + 1) % SIZE</code>. If it was the last element, reset both to -1.</div></div>
+    <div class="step"><div class="step-n">5</div><div class="step-t"><strong>isFull:</strong> <code>(rear + 1) % SIZE == front</code>. One slot is intentionally left empty so we can tell full from empty.</div></div>
+  </div>
+</div>
+
+<!-- =========== VIDEO 11 =========== -->
+<div id="v11" class="section">
+  <p class="page-title">Queue using linked list</p>
+  <p class="page-sub">Video #11 — No fixed size. Memory grows dynamically.</p>
+
+  <p>Instead of a fixed array, each element is a <strong>Node</strong> object in memory. Nodes are connected via pointers. We keep two pointers — <code>front</code> and <code>rear</code> — to the start and end of the chain.</p>
+
+  <div class="two-col">
+    <div class="card info">
+      <h3>Why linked list?</h3>
+      <p>The array queue has a fixed maximum size set at compile time. A linked list queue <strong>has no size limit</strong> — it grows and shrinks as needed. Memory is allocated only when required.</p>
+    </div>
+    <div class="card info">
+      <h3>The node structure</h3>
+      <p>Every node has two fields: <code>data</code> — the value stored, and <code>next</code> — a pointer to the next node. The last node's <code>next</code> is <code>nullptr</code>.</p>
+    </div>
+  </div>
+
+  <h2>How the chain looks in memory</h2>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.25rem 1.5rem;margin:1rem 0;overflow-x:auto;">
+    <div class="ll-vis">
+      <div class="ll-node-wrap">
+        <div class="ll-node-lbl f">front</div>
+        <div class="ll-box">
+          <div class="ll-data">10</div>
+          <div class="ll-next">next*</div>
+        </div>
+      </div>
+      <div class="ll-arrow">→</div>
+      <div class="ll-node-wrap">
+        <div class="ll-node-lbl" style="height:14px;"></div>
+        <div class="ll-box">
+          <div class="ll-data">20</div>
+          <div class="ll-next">next*</div>
+        </div>
+      </div>
+      <div class="ll-arrow">→</div>
+      <div class="ll-node-wrap">
+        <div class="ll-node-lbl r">rear</div>
+        <div class="ll-box">
+          <div class="ll-data">30</div>
+          <div class="ll-next">next*</div>
+        </div>
+      </div>
+      <div class="ll-arrow">→</div>
+      <div class="ll-null">nullptr</div>
+    </div>
+  </div>
+
+  <h2>Interactive demo — linked list queue</h2>
+
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.25rem 1.5rem;margin:1rem 0;overflow-x:auto;">
+    <div class="ll-vis" id="ll-vis">
+      <div class="ll-empty">Queue is empty — press Enqueue!</div>
+    </div>
+    <div class="ptr-row">
+      <span class="ptr f" id="lf-lbl">front: nullptr</span>
+      <span class="ptr r" id="lr-lbl">rear: nullptr</span>
+      <span class="ptr c" id="lc-lbl">nodes: 0</span>
+    </div>
+    <div class="status" id="ll-status">Linked list queue is empty.</div>
+    <div class="controls">
+      <input type="number" id="ll-val" value="10">
+      <button class="ctrl enq" onclick="llEnq()">Enqueue</button>
+      <button class="ctrl deq" onclick="llDeq()">Dequeue</button>
+      <button class="ctrl" onclick="llReset()">Reset</button>
+    </div>
+  </div>
+
+  <hr>
+  <h2>Complete C++ implementation</h2>
+
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="dot-row"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div>
+      <span class="code-lang">linked_queue.cpp</span>
+    </div>
+    <div class="code-body"><pre><span class="pp">#include</span> <span class="st">&lt;iostream&gt;</span>
+<span class="kw">using namespace</span> <span class="ty">std</span>;
+
+<span class="cm">// ─── Node: one link in the chain ────────────────────</span>
+<span class="kw">struct</span> <span class="ty">Node</span> {
+    <span class="kw">int</span>   data;    <span class="cm">// the value stored in this node</span>
+    <span class="ty">Node</span>* next;    <span class="cm">// pointer to the next node (nullptr if last)</span>
+
+    <span class="nm">Node</span>(<span class="kw">int</span> val) {
+        data = val;
+        next = <span class="kw">nullptr</span>;
+    }
+};
+
+<span class="cm">// ─── LinkedQueue ────────────────────────────────────</span>
+<span class="kw">class</span> <span class="ty">LinkedQueue</span> {
+    <span class="ty">Node</span>* front;   <span class="cm">// points to first node (dequeue from here)</span>
+    <span class="ty">Node</span>* rear;    <span class="cm">// points to last node  (enqueue here)</span>
+
+<span class="kw">public</span>:
+    <span class="nm">LinkedQueue</span>() {
+        front = <span class="kw">nullptr</span>;
+        rear  = <span class="kw">nullptr</span>;
+    }
+
+    <span class="cm">// ─── isEmpty ────────────────────────────────────────</span>
+    <span class="kw">bool</span> <span class="nm">isEmpty</span>() {
+        <span class="kw">return</span> front == <span class="kw">nullptr</span>;
+    }
+
+    <span class="cm">// ─── enqueue: create a new node, attach at rear ─────</span>
+    <span class="kw">void</span> <span class="nm">enqueue</span>(<span class="kw">int</span> value) {
+        <span class="ty">Node</span>* newNode = <span class="kw">new</span> <span class="ty">Node</span>(value); <span class="cm">// allocate on heap</span>
+
+        <span class="kw">if</span> (<span class="nm">isEmpty</span>()) {
+            <span class="cm">// first node: both front AND rear point to it</span>
+            front = newNode;
+            rear  = newNode;
+        } <span class="kw">else</span> {
+            rear->next = newNode;  <span class="cm">// old rear points forward to new</span>
+            rear       = newNode;  <span class="cm">// rear itself moves to new node</span>
+        }
+        cout &lt;&lt; <span class="st">"Enqueued: "</span> &lt;&lt; value &lt;&lt; endl;
+    }
+
+    <span class="cm">// ─── dequeue: remove from front ─────────────────────</span>
+    <span class="kw">void</span> <span class="nm">dequeue</span>() {
+        <span class="kw">if</span> (<span class="nm">isEmpty</span>()) {
+            cout &lt;&lt; <span class="st">"Queue is EMPTY!"</span> &lt;&lt; endl;
+            <span class="kw">return</span>;
+        }
+        <span class="ty">Node</span>* temp = front;           <span class="cm">// save to delete later</span>
+        cout &lt;&lt; <span class="st">"Dequeued: "</span> &lt;&lt; front->data &lt;&lt; endl;
+        front = front->next;          <span class="cm">// move front to next node</span>
+        <span class="kw">if</span> (front == <span class="kw">nullptr</span>) {
+            rear = <span class="kw">nullptr</span>;          <span class="cm">// queue is now empty</span>
+        }
+        <span class="kw">delete</span> temp;                  <span class="cm">// free the removed node's memory!</span>
+    }
+
+    <span class="cm">// ─── display: walk chain front → rear ───────────────</span>
+    <span class="kw">void</span> <span class="nm">display</span>() {
+        <span class="kw">if</span> (<span class="nm">isEmpty</span>()) { cout &lt;&lt; <span class="st">"Empty."</span> &lt;&lt; endl; <span class="kw">return</span>; }
+        <span class="ty">Node</span>* curr = front;
+        cout &lt;&lt; <span class="st">"Queue: "</span>;
+        <span class="kw">while</span> (curr != <span class="kw">nullptr</span>) {
+            cout &lt;&lt; curr->data;
+            <span class="kw">if</span> (curr->next) cout &lt;&lt; <span class="st">" → "</span>;
+            curr = curr->next;
+        }
+        cout &lt;&lt; <span class="st">" → nullptr"</span> &lt;&lt; endl;
+    }
+
+    <span class="cm">// ─── destructor: free all remaining nodes ───────────</span>
+    ~<span class="nm">LinkedQueue</span>() {
+        <span class="kw">while</span> (!<span class="nm">isEmpty</span>()) <span class="nm">dequeue</span>();
+    }
+};
+
+<span class="kw">int</span> <span class="nm">main</span>() {
+    <span class="ty">LinkedQueue</span> q;
+    q.<span class="nm">enqueue</span>(<span class="num">10</span>);  <span class="cm">// front → [10|*] ← rear</span>
+    q.<span class="nm">enqueue</span>(<span class="num">20</span>);  <span class="cm">// front → [10|*] → [20|*] ← rear</span>
+    q.<span class="nm">enqueue</span>(<span class="num">30</span>);  <span class="cm">// front → [10|*] → [20|*] → [30|*] ← rear</span>
+    q.<span class="nm">display</span>();   <span class="cm">// 10 → 20 → 30 → nullptr</span>
+    q.<span class="nm">dequeue</span>();   <span class="cm">// removes 10; front now at [20]</span>
+    q.<span class="nm">display</span>();   <span class="cm">// 20 → 30 → nullptr</span>
+    <span class="kw">return</span> <span class="num">0</span>;
+}</pre></div>
+  </div>
+
+  <h2>Step-by-step walkthrough</h2>
+  <div class="steps">
+    <div class="step"><div class="step-n">1</div><div class="step-t"><strong>Start:</strong> <code>front = nullptr, rear = nullptr</code>. The queue is empty.</div></div>
+    <div class="step"><div class="step-n">2</div><div class="step-t"><strong>Enqueue (first node):</strong> <code>new Node(value)</code> creates a node on the heap. Both <code>front</code> and <code>rear</code> point to it.</div></div>
+    <div class="step"><div class="step-n">3</div><div class="step-t"><strong>Enqueue (subsequent):</strong> <code>rear-&gt;next = newNode</code> links old rear to new, then <code>rear = newNode</code> moves rear.</div></div>
+    <div class="step"><div class="step-n">4</div><div class="step-t"><strong>Dequeue:</strong> save <code>front</code> in temp, move <code>front = front-&gt;next</code>, then <code>delete temp</code> to free memory.</div></div>
+    <div class="step"><div class="step-n">5</div><div class="step-t"><strong>Last element dequeued:</strong> <code>front</code> becomes nullptr. Also set <code>rear = nullptr</code> — queue is empty again.</div></div>
+  </div>
+
+  <hr>
+  <h2>Array queue vs linked list queue — comparison</h2>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin:1rem 0;">
+    <table>
+      <thead>
+        <tr>
+          <th>Feature</th>
+          <th>Circular array queue</th>
+          <th>Linked list queue</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Size</td>
+          <td>Fixed at compile time</td>
+          <td class="yes">Dynamic — grows as needed</td>
+        </tr>
+        <tr>
+          <td>Memory per element</td>
+          <td class="yes">Just the data (int)</td>
+          <td>Data + pointer (extra 8 bytes)</td>
+        </tr>
+        <tr>
+          <td>Can overflow?</td>
+          <td>Yes — when full</td>
+          <td class="yes">No — unlimited</td>
+        </tr>
+        <tr>
+          <td>Speed</td>
+          <td class="yes">Faster (cache-friendly array)</td>
+          <td>Slightly slower (heap allocations)</td>
+        </tr>
+        <tr>
+          <td>Memory leaks</td>
+          <td class="yes">Not possible (stack memory)</td>
+          <td>Possible if you forget <code>delete</code></td>
+        </tr>
+        <tr>
+          <td>Best used when</td>
+          <td>Size is known in advance</td>
+          <td class="yes">Size is unknown / varies a lot</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+</main>
+
+<script>
+function show(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+
+/* ======= CIRCULAR QUEUE ======= */
+const SZ = 5;
+let cArr = new Array(SZ).fill(null);
+let cFront = -1, cRear = -1, cCount = 0;
+
+function renderCirc() {
+  const vis = document.getElementById('circ-vis');
+  vis.innerHTML = '';
+  for (let i = 0; i < SZ; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'q-cell';
+    const isFront = i === cFront;
+    const isRear = i === cRear;
+    if (cArr[i] !== null) {
+      cell.classList.add('filled');
+      if (isFront && isRear) {
+        cell.classList.add('both-cell');
+        cell.innerHTML = `${cArr[i]}<span class="q-label b">F=R</span><span class="idx">[${i}]</span>`;
+      } else if (isFront) {
+        cell.classList.add('front-cell');
+        cell.innerHTML = `${cArr[i]}<span class="q-label f">front</span><span class="idx">[${i}]</span>`;
+      } else if (isRear) {
+        cell.classList.add('rear-cell');
+        cell.innerHTML = `${cArr[i]}<span class="q-label r">rear</span><span class="idx">[${i}]</span>`;
+      } else {
+        cell.innerHTML = `${cArr[i]}<span class="idx">[${i}]</span>`;
+      }
+    } else {
+      cell.classList.add('empty');
+      cell.innerHTML = `<span class="idx">[${i}]</span>`;
+    }
+    vis.appendChild(cell);
+  }
+  document.getElementById('cf-lbl').textContent = `front: ${cFront}`;
+  document.getElementById('cr-lbl').textContent = `rear: ${cRear}`;
+  document.getElementById('cc-lbl').textContent = `count: ${cCount} / ${SZ-1}`;
+}
+
+function setStatus(id, msg, type) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.className = 'status' + (type === 'ok' ? ' ok' : type === 'err' ? ' err' : '');
+}
+
+function circEnq() {
+  const v = parseInt(document.getElementById('circ-val').value);
+  if (isNaN(v)) { setStatus('circ-status','Enter a valid number','err'); return; }
+  if (cCount >= SZ - 1) { setStatus('circ-status','Queue is FULL! Cannot enqueue.','err'); return; }
+  if (cFront === -1) { cFront = 0; cRear = 0; }
+  else { cRear = (cRear + 1) % SZ; }
+  cArr[cRear] = v; cCount++;
+  renderCirc();
+  setStatus('circ-status', `Enqueued ${v}. rear → index ${cRear} via (rear+1) % ${SZ}.`, 'ok');
+  document.getElementById('circ-val').value = v + 10;
+}
+
+function circDeq() {
+  if (cFront === -1) { setStatus('circ-status','Queue is EMPTY! Nothing to dequeue.','err'); return; }
+  const removed = cArr[cFront];
+  cArr[cFront] = null; cCount--;
+  if (cFront === cRear) { cFront = -1; cRear = -1; }
+  else { cFront = (cFront + 1) % SZ; }
+  renderCirc();
+  setStatus('circ-status', `Dequeued ${removed}. front → index ${cFront} via (front+1) % ${SZ}.`, 'ok');
+}
+
+function circReset() {
+  cArr = new Array(SZ).fill(null); cFront = -1; cRear = -1; cCount = 0;
+  renderCirc();
+  setStatus('circ-status','Reset. front = -1, rear = -1.','');
+}
+
+renderCirc();
+
+/* ======= LINKED LIST QUEUE ======= */
+let llNodes = [];
+
+function renderLL() {
+  const vis = document.getElementById('ll-vis');
+  if (llNodes.length === 0) {
+    vis.innerHTML = '<div class="ll-empty">Queue is empty — press Enqueue!</div>';
+    document.getElementById('lf-lbl').textContent = 'front: nullptr';
+    document.getElementById('lr-lbl').textContent = 'rear: nullptr';
+    document.getElementById('lc-lbl').textContent = 'nodes: 0';
+    return;
+  }
+  vis.innerHTML = '';
+  llNodes.forEach((val, i) => {
+    const isFirst = i === 0, isLast = i === llNodes.length - 1;
+    const wrap = document.createElement('div');
+    wrap.className = 'll-node-wrap';
+    const lbl = document.createElement('div');
+    lbl.className = 'll-node-lbl';
+    if (isFirst && isLast) { lbl.classList.add('b'); lbl.textContent = 'front=rear'; }
+    else if (isFirst) { lbl.classList.add('f'); lbl.textContent = 'front'; }
+    else if (isLast) { lbl.classList.add('r'); lbl.textContent = 'rear'; }
+    wrap.appendChild(lbl);
+    const box = document.createElement('div');
+    box.className = 'll-box';
+    box.innerHTML = `<div class="ll-data">${val}</div><div class="ll-next">next*</div>`;
+    wrap.appendChild(box);
+    vis.appendChild(wrap);
+    if (!isLast) {
+      const arr = document.createElement('div');
+      arr.className = 'll-arrow';
+      arr.textContent = '→';
+      vis.appendChild(arr);
+    }
+  });
+  const arr = document.createElement('div');
+  arr.className = 'll-arrow';
+  arr.textContent = '→';
+  vis.appendChild(arr);
+  const nullEl = document.createElement('div');
+  nullEl.className = 'll-null';
+  nullEl.textContent = 'nullptr';
+  vis.appendChild(nullEl);
+  document.getElementById('lf-lbl').textContent = `front: ${llNodes[0]}`;
+  document.getElementById('lr-lbl').textContent = `rear: ${llNodes[llNodes.length-1]}`;
+  document.getElementById('lc-lbl').textContent = `nodes: ${llNodes.length}`;
+}
+
+function llEnq() {
+  const v = parseInt(document.getElementById('ll-val').value);
+  if (isNaN(v)) { setStatus('ll-status','Enter a valid number','err'); return; }
+  const isFirst = llNodes.length === 0;
+  llNodes.push(v);
+  renderLL();
+  setStatus('ll-status', isFirst
+    ? `Enqueued ${v}. First node — both front and rear point to it.`
+    : `Enqueued ${v}. rear->next = newNode; rear = newNode.`, 'ok');
+  document.getElementById('ll-val').value = v + 10;
+}
+
+function llDeq() {
+  if (llNodes.length === 0) { setStatus('ll-status','Queue is EMPTY! Nothing to dequeue.','err'); return; }
+  const removed = llNodes.shift();
+  renderLL();
+  setStatus('ll-status', llNodes.length === 0
+    ? `Dequeued ${removed}. Queue now empty — front = rear = nullptr.`
+    : `Dequeued ${removed}. front = front->next (now ${llNodes[0]}). delete temp.`, 'ok');
+}
+
+function llReset() {
+  llNodes = [];
+  renderLL();
+  setStatus('ll-status','Reset. front = nullptr, rear = nullptr.','');
+}
+</script>
+</body>
+</html>
