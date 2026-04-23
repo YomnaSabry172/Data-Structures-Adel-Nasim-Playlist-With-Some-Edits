@@ -35,7 +35,7 @@ It is also a personal learning and revision project.
 This work is based on the original repository by **Adel Nasim**.
 
 - **Original repository:** [Adel Nasim Data Structures](https://github.com/Adel-Nasim/Data-Structures)
-- **Original playlist:** [Add the playlist link here]
+- **Original playlist:** [[Add the playlist link here](https://www.youtube.com/playlist?list=PLCInYL3l2AajqOUW_2SwjWeMwf4vL4RSp)]
 
 > You can replace the playlist line above with the exact playlist link from the original README.
 
