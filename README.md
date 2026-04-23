@@ -35,9 +35,7 @@ It is also a personal learning and revision project.
 This work is based on the original repository by **Adel Nasim**.
 
 - **Original repository:** [Adel Nasim Data Structures](https://github.com/Adel-Nasim/Data-Structures)
-- **Original playlist:** [[Add the playlist link here](https://www.youtube.com/playlist?list=PLCInYL3l2AajqOUW_2SwjWeMwf4vL4RSp)]
-
-> You can replace the playlist line above with the exact playlist link from the original README.
+- **Original playlist:** [[Link](https://www.youtube.com/playlist?list=PLCInYL3l2AajqOUW_2SwjWeMwf4vL4RSp)]
 
 ---
 
@@ -89,6 +87,7 @@ Part of this fork is focused on making some concepts easier to understand throug
 ### Current examples
 - `infix_postfix.html`
 - `stack_study_guide.html`
+- `queue_guide.html`
 
 More interactive files may be added gradually as the repository develops.
 
